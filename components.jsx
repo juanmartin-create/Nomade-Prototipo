@@ -3,23 +3,13 @@
 
 const NomadeLogo = ({ size = 28, showText = true, color }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-    <svg width={size} height={size} viewBox="0 0 40 40" style={{ flexShrink: 0 }}>
-      <defs>
-        <linearGradient id="nlsky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#F8B864" />
-          <stop offset="55%" stopColor="#F1A350" />
-          <stop offset="100%" stopColor="#E27E2A" />
-        </linearGradient>
-      </defs>
-      <rect x="1" y="1" width="38" height="38" rx="10" fill="url(#nlsky)" />
-      {/* Sun ridge */}
-      <path d="M1 28 Q 8 22, 14 25 T 26 23 T 39 26 L 39 39 L 1 39 Z" fill="#7A9A55" opacity=".85" />
-      {/* Mini plane */}
-      <path d="M28 10 l4 -1 l-1 3 l3 1 l-4 2 l-1 3 l-2 -3 l-3 1 z" fill="#fff" opacity=".95" />
-      {/* Tiny "passport" dot */}
-      <circle cx="11" cy="18" r="3" fill="#A8412B" />
-      <rect x="9.5" y="16.5" width="3" height="3" rx=".5" fill="#C76040" />
-    </svg>
+    <img
+      src="assets/nomade-logo.png"
+      alt="Nomade"
+      width={size}
+      height={size}
+      style={{ flexShrink: 0, borderRadius: size * 0.22, display: 'block' }}
+    />
     {showText && (
       <span className="display" style={{
         fontSize: size * 0.78,
