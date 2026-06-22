@@ -15,7 +15,7 @@ function SideNav({ active, onChange, profile, onExit }) {
       height: "100vh", position: "sticky", top: 0,
     }}>
       <div style={{ padding: "8px 10px 20px" }}>
-        <NomadeLogo size={22} />
+        <NomadeLogo size={48} />
       </div>
 
       {/* Trip card */}

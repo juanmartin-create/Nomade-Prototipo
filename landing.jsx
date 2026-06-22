@@ -13,7 +13,7 @@ function NavBar({ onStart, tweaks }) {
       borderBottom: "1px solid var(--line)"
     }}>
       <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px" }}>
-        <NomadeLogo size={26} />
+        <NomadeLogo size={56} />
         <nav style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 14.5, color: "var(--ink-700)", fontWeight: 500, whiteSpace: "nowrap" }}>
           <a href="#como-funciona" style={{}}>Cómo funciona</a>
           <a href="#packs">Packs</a>
@@ -503,7 +503,7 @@ function Footer() {
       <div className="container">
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr", gap: 56, marginBottom: 48 }}>
           <div>
-            <NomadeLogo size={28} color="var(--cream-50)" />
+            <NomadeLogo size={60} color="var(--cream-50)" />
             <p style={{ fontSize: 14, marginTop: 16, maxWidth: 280, lineHeight: 1.55 }}>
               La plataforma que organiza todo tu intercambio universitario, antes de que subas al avión.
             </p>

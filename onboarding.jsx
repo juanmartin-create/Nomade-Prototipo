@@ -32,7 +32,7 @@ function StepShell({ children, title, sub, step, total, onBack, onClose }) {
         <div style={{ flex: 1, maxWidth: 480, margin: "0 24px" }}>
           <ProgressBar step={step} total={total} />
         </div>
-        <NomadeLogo size={22} />
+        <NomadeLogo size={48} />
         <button onClick={onClose} style={{ padding: 8, borderRadius: 8, color: "var(--ink-soft)" }}><Icon name="x" size={18} /></button>
       </header>
       <main style={{ flex: 1, display: "flex", alignItems: "center", padding: "48px 32px" }}>
