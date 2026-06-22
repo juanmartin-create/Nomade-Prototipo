@@ -6,3 +6,5 @@ node_modules/
 *.log
 .env
 .env.local
+node_modules/
+process-logo.js
