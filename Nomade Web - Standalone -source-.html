@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1240, initial-scale=1" />
+  <title>Nomade — Tu intercambio, resuelto</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="data.bundled.js"></script>
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1543783207-ec64e4d95325?w=900&q=80&auto=format&fit=crop" data-resource-id="d_madrid" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1583422409516-2895a77efded?w=900&q=80&auto=format&fit=crop" data-resource-id="d_barcelona" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=900&q=80&auto=format&fit=crop" data-resource-id="d_paris" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1520975916090-3105956dac38?w=900&q=80&auto=format&fit=crop" data-resource-id="d_milan" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=900&q=80&auto=format&fit=crop" data-resource-id="d_roma" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1599946347371-68eb71b16afc?w=900&q=80&auto=format&fit=crop" data-resource-id="d_berlin" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1595867818082-083862f3d630?w=900&q=80&auto=format&fit=crop" data-resource-id="d_munich" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=900&q=80&auto=format&fit=crop" data-resource-id="d_bsas" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop" data-resource-id="avatar_1" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop" data-resource-id="avatar_2" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop" data-resource-id="avatar_3" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop" data-resource-id="avatar_4" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&h=80&fit=crop" data-resource-id="parents" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop" data-resource-id="cohort_1" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&h=60&fit=crop" data-resource-id="cohort_2" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=60&h=60&fit=crop" data-resource-id="cohort_3" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=60&h=60&fit=crop" data-resource-id="cohort_4" />
+  <meta name="ext-resource-dependency" content="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=60&h=60&fit=crop" data-resource-id="cohort_5" />
+
+<template id="__bundler_thumbnail" data-bg-color="#F6F0E1">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#F6F0E1"/>
+    <g transform="translate(0 100)">
+      <text x="600" y="380" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="180" letter-spacing="-8" fill="#2A1A0E" text-anchor="middle">NOMADE</text>
+    </g>
+    <g transform="translate(820 240) rotate(20)">
+      <path d="M0 0 l46 -9 l-7 25 l28 7 l-36 14 l-9 25 l-16 -25 l-25 9 z" fill="#E88836"/>
+    </g>
+    <circle cx="600" cy="600" r="70" fill="#E88836" opacity="0.85"/>
+    <text x="600" y="700" font-family="system-ui, sans-serif" font-size="22" fill="#6E5238" text-anchor="middle" letter-spacing="3">PREPARANDO TU INTERCAMBIO…</text>
+  </svg>
+</template>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="landing.bundled.jsx"></script>
+  <script type="text/babel" src="onboarding.jsx"></script>
+  <script type="text/babel" src="dashboard.bundled.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

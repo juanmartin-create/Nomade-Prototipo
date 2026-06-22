@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Nomade — Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #14110D;
+      --bg-2: #1F1A14;
+      --ink: #F6F0E1;
+      --ink-dim: rgba(246,240,225,0.65);
+      --orange: #E88836;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: "Hanken Grotesk", system-ui, sans-serif; overflow: hidden; }
+
+    /* Stage scales to viewport — fixed design at 1920x1080 */
+    #scaler { position: fixed; inset: 0; display: grid; place-items: center; }
+    #stage {
+      width: 1920px; height: 1080px;
+      transform-origin: center center;
+      display: grid; grid-template-rows: 1fr 84px;
+      position: relative;
+      background: radial-gradient(ellipse at center top, #2A2017 0%, #14110D 70%);
+    }
+
+    /* Screen area with browser frame */
+    #screen {
+      padding: 40px 60px 30px;
+      display: grid; place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .browser {
+      width: 1480px; height: 900px;
+      background: var(--bg-2);
+      border-radius: 18px;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.04);
+      overflow: hidden;
+      display: grid; grid-template-rows: 44px 1fr;
+      position: relative;
+    }
+    .browser-chrome {
+      background: #0F0B07;
+      display: flex; align-items: center; padding: 0 18px; gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .dots { display: flex; gap: 8px; }
+    .dot { width: 12px; height: 12px; border-radius: 999px; }
+    .dot-r { background: #FF5F57; } .dot-y { background: #FEBC2E; } .dot-g { background: #28C840; }
+    .url-bar {
+      background: rgba(255,255,255,0.07);
+      border-radius: 8px;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: var(--ink-dim);
+      flex: 1; max-width: 540px; margin: 0 auto;
+      text-align: center;
+      letter-spacing: .02em;
+    }
+    .tab-pill {
+      background: rgba(255,255,255,0.05);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--ink-dim);
+      display: flex; align-items: center; gap: 6px;
+    }
+    iframe {
+      width: 100%; height: 100%; border: 0; background: #F6F0E1;
+      display: block;
+    }
+
+    /* Cursor that floats over iframe */
+    #cursor {
+      position: absolute;
+      pointer-events: none;
+      width: 28px; height: 28px;
+      z-index: 50;
+      transition: transform .9s cubic-bezier(.22,.85,.3,1), opacity .3s ease;
+      opacity: 0;
+      transform: translate(50%, 50%);
+    }
+    #cursor svg { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+    #cursor.click::after {
+      content: ""; position: absolute; inset: -16px;
+      border-radius: 999px;
+      background: rgba(232,136,54,0.35);
+      animation: ripple .55s ease-out;
+    }
+    @keyframes ripple {
+      from { transform: scale(.3); opacity: 1; }
+      to { transform: scale(2.2); opacity: 0; }
+    }
+
+    /* Caption */
+    .caption {
+      position: absolute;
+      left: 80px; bottom: 60px;
+      max-width: 620px;
+      padding: 22px 28px;
+      background: rgba(15,11,7,0.85);
+      border: 1px solid rgba(232,136,54,0.25);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 18px;
+      transition: opacity .45s ease, transform .45s cubic-bezier(.22,.85,.3,1);
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+    }
+    .caption.visible { opacity: 1; transform: none; }
+    .caption .kicker {
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 6px;
+    }
+    .caption .text {
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      font-weight: 500;
+    }
+    .caption .text em {
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      color: var(--orange);
+      font-weight: 400;
+    }
+
+    /* Logo intro */
+    .intro {
+      position: absolute; inset: 0;
+      background: #F6F0E1;
+      display: grid; place-items: center;
+      transition: opacity 0.6s ease;
+      z-index: 100;
+    }
+    .intro.hidden { opacity: 0; pointer-events: none; }
+    .intro-content { text-align: center; }
+    .intro-logo {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 800;
+      font-size: 96px;
+      color: #2A1A0E;
+      letter-spacing: -0.05em;
+      line-height: 1;
+    }
+    .intro-tag {
+      font-size: 22px;
+      color: #6E5238;
+      margin-top: 18px;
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+    }
+    .intro-load-bar {
+      width: 220px; height: 3px;
+      background: rgba(42,26,14,0.1);
+      border-radius: 999px;
+      margin: 36px auto 0;
+      overflow: hidden;
+    }
+    .intro-load-fill {
+      height: 100%;
+      background: #E88836;
+      width: 0%;
+      animation: load 2s ease-out forwards;
+    }
+    @keyframes load { to { width: 100%; } }
+
+    /* Controls bar */
+    #controls {
+      background: #0A0805;
+      display: flex; align-items: center; gap: 24px;
+      padding: 0 60px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    #controls button {
+      appearance: none; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--ink); cursor: pointer;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font: inherit; font-size: 14px; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: background .15s ease;
+    }
+    #controls button:hover { background: rgba(255,255,255,0.1); }
+    #controls button.primary {
+      background: var(--orange); border-color: var(--orange);
+      color: white; font-weight: 600;
+    }
+    #controls button.primary:hover { background: #D87026; }
+    #progress {
+      flex: 1; height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px; overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+    #progress-fill {
+      height: 100%; background: var(--orange);
+      width: 0%;
+      border-radius: 999px;
+      transition: width .1s linear;
+    }
+    .timestamp {
+      font-variant-numeric: tabular-nums;
+      font-size: 14px;
+      color: var(--ink-dim);
+      min-width: 100px; text-align: right;
+      letter-spacing: .03em;
+    }
+    .chapter-markers {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+    .chapter-marker {
+      position: absolute; top: -3px;
+      width: 2px; height: 12px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 1px;
+    }
+    .demo-title {
+      position: absolute;
+      top: 30px; left: 60px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .demo-title .pulse {
+      width: 8px; height: 8px; border-radius: 999px;
+      background: #28C840;
+      box-shadow: 0 0 0 0 rgba(40,200,64,0.5);
+      animation: pulse 1.6s ease-out infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(40,200,64,0.5); }
+      100% { box-shadow: 0 0 0 14px rgba(40,200,64,0); }
+    }
+  </style>
+  <meta name="ext-resource-dependency" content="Nomade Web.html" data-resource-id="proto" />
+
+<template id="__bundler_thumbnail" data-bg-color="#14110D">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#14110D"/>
+    <!-- Browser frame silhouette -->
+    <rect x="200" y="180" width="800" height="500" rx="18" fill="#1F1A14"/>
+    <rect x="200" y="180" width="800" height="40" rx="18" fill="#0F0B07"/>
+    <circle cx="230" cy="200" r="6" fill="#FF5F57"/>
+    <circle cx="252" cy="200" r="6" fill="#FEBC2E"/>
+    <circle cx="274" cy="200" r="6" fill="#28C840"/>
+    <text x="600" y="450" font-family="system-ui, sans-serif" font-weight="800" font-size="120" letter-spacing="-6" fill="#F6F0E1" text-anchor="middle">NOMADE</text>
+    <text x="600" y="510" font-family="Georgia, serif" font-style="italic" font-size="32" fill="#E88836" text-anchor="middle">demo en vivo</text>
+    <!-- Play indicator -->
+    <circle cx="600" cy="730" r="20" fill="#E88836" opacity="0.85"/>
+    <path d="M594 720 L594 740 L612 730 Z" fill="white"/>
+  </svg>
+</template>
+</head>
+<body>
+  <div id="scaler">
+    <div id="stage">
+      <div id="screen">
+        <div class="demo-title">
+          <span class="pulse"></span>
+          <span>Nomade · Demo en vivo</span>
+        </div>
+
+        <div class="browser">
+          <div class="browser-chrome">
+            <div class="dots"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
+            <div class="url-bar">🔒 nomade.app</div>
+            <div class="tab-pill">⏵ Reproduciendo</div>
+          </div>
+          <iframe id="proto"></iframe>
+        </div>
+
+        <!-- Floating cursor (overlay over iframe) -->
+        <div id="cursor">
+          <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 3 L5 21 L9.5 17 L12 23 L15 22 L12.5 16 L19 16 Z"
+                  fill="#fff" stroke="#1A1410" stroke-width="1.4" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- Caption overlay -->
+        <div class="caption" id="caption">
+          <div class="kicker" id="cap-kicker">Demo</div>
+          <div class="text" id="cap-text">Cargando…</div>
+        </div>
+
+        <!-- Intro splash -->
+        <div class="intro" id="intro">
+          <div class="intro-content">
+            <div class="intro-logo">NOMADE</div>
+            <div class="intro-tag">Tu intercambio, <em>resuelto</em> antes</div>
+            <div class="intro-load-bar"><div class="intro-load-fill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="controls">
+        <button onclick="restart()">↺ Reiniciar</button>
+        <button onclick="togglePlay()" id="play-btn" class="primary">⏸ Pausar</button>
+        <div id="progress" onclick="seekTo(event)">
+          <div id="progress-fill"></div>
+          <div class="chapter-markers" id="chapter-markers"></div>
+        </div>
+        <div class="timestamp" id="timestamp">0:00 / 0:32</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----- Scale stage to viewport -----
+    function scaleStage() {
+      const stage = document.getElementById('stage');
+      const w = window.innerWidth, h = window.innerHeight;
+      const s = Math.min(w / 1920, h / 1080);
+      stage.style.transform = `scale(${s})`;
+    }
+    window.addEventListener('resize', scaleStage);
+    scaleStage();
+
+    // ----- State -----
+    const iframe = document.getElementById('proto');
+    // Load the bundled prototype into the iframe
+    iframe.src = window.__resources.proto;
+    const cursor = document.getElementById('cursor');
+    const caption = document.getElementById('caption');
+    const capKicker = document.getElementById('cap-kicker');
+    const capText = document.getElementById('cap-text');
+    const progressFill = document.getElementById('progress-fill');
+    const timestamp = document.getElementById('timestamp');
+    const intro = document.getElementById('intro');
+    const playBtn = document.getElementById('play-btn');
+
+    let currentTime = 0;
+    let playing = true;
+    let lastRaf = 0;
+    let dispatched = new Set();
+    let iframeReady = false;
+    let tickStarted = false;
+    let loadCount = 0;
+
+    // Always start fresh (replaying scripted iframe events from a save point is destructive)
+    const STORAGE_KEY = 'nomade_demo_time_v1';
+    localStorage.removeItem(STORAGE_KEY);
+
+    // ----- Cursor helpers -----
+    // Position cursor relative to the browser/iframe (not page).
+    // x, y are in iframe pixel coordinates.
+    function moveCursor(x, y) {
+      // Browser frame is centered horizontally inside #screen with width 1480, height 900.
+      // The iframe starts after 44px chrome. Compute its top-left within #screen.
+      // #screen is the parent of #cursor; #cursor uses absolute positioning.
+      // Browser is centered: (1920 - 1480 + 60*0)/2 = 220 left within screen padding 60,
+      // so its left within screen = (screen_w - 1480)/2.
+      // We'll position cursor inside #screen using the browser's offset.
+      const screen = document.getElementById('screen');
+      const browser = screen.querySelector('.browser');
+      const sr = screen.getBoundingClientRect();
+      const br = browser.getBoundingClientRect();
+      // Compute browser offset within #screen (in design pixels — undo overall scale)
+      const scale = sr.width / 1920; // ratio of rendered vs design
+      const browserLeftDesign = (br.left - sr.left) / scale; // in design px
+      const browserTopDesign = (br.top - sr.top) / scale + 44; // +chrome height
+      // iframe is 1480 wide design, but inner viewport could be different.
+      // Use iframe.contentWindow.innerWidth/Height to compute target px.
+      const iw = iframe.contentWindow?.innerWidth || 1480;
+      const ih = iframe.contentWindow?.innerHeight || 856;
+      const iframeWDesign = 1480;
+      const iframeHDesign = 856;
+      const targetX = browserLeftDesign + (x / iw) * iframeWDesign;
+      const targetY = browserTopDesign + (y / ih) * iframeHDesign;
+      cursor.style.left = targetX + 'px';
+      cursor.style.top = targetY + 'px';
+      cursor.style.opacity = '1';
+    }
+    function hideCursor() { cursor.style.opacity = '0'; }
+    function clickEffect() {
+      cursor.classList.remove('click');
+      void cursor.offsetWidth; // force reflow
+      cursor.classList.add('click');
+    }
+
+    // ----- Caption helpers -----
+    function showCaption(kicker, text) {
+      capKicker.textContent = kicker;
+      capText.innerHTML = text;
+      caption.classList.add('visible');
+    }
+    function hideCaption() { caption.classList.remove('visible'); }
+
+    // ----- Iframe helpers -----
+    function $iframe(sel) { return iframe.contentDocument?.querySelector(sel); }
+    function $$iframe(sel) { return [...(iframe.contentDocument?.querySelectorAll(sel) || [])]; }
+    function findBtn(text) {
+      const all = $$iframe('button');
+      return all.find(b => b.innerText.trim().includes(text));
+    }
+    function clickInIframe(el) {
+      if (!el) return false;
+      // Center of element in iframe coords
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      moveCursor(cx, cy);
+      setTimeout(() => {
+        clickEffect();
+        el.click();
+      }, 500);
+      return true;
+    }
+    function scrollIframe(y) {
+      iframe.contentWindow.scrollTo({ top: y, behavior: 'smooth' });
+    }
+
+    // ----- Timeline -----
+    // Events are (t in seconds, fn).
+    const timeline = [
+      { t: 0,  chapter: '01 Landing', label: 'Hero', fn: () => {
+          intro.classList.add('hidden');
+          showCaption('Web del producto', 'Tu intercambio universitario, <em>resuelto</em> antes de subir al avión.');
+        } },
+
+      { t: 3.5, label: 'Stats', fn: () => {
+          showCaption('Confianza', '+1.300 estudiantes ya armaron su plan en Nomade.');
+          scrollIframe(620);
+        } },
+
+      { t: 6, label: 'Cómo funciona', fn: () => {
+          showCaption('Cómo funciona', '4 pasos: contás tu intercambio, te armamos el plan, resolvemos cada trámite, llegás listo.');
+          scrollIframe(1280);
+        } },
+
+      { t: 9, label: 'Packs', fn: () => {
+          showCaption('Packs y precios', 'La <em>comodidad</em> tiene un precio. Pagás una vez, antes del viaje.');
+          scrollIframe(2400);
+        } },
+
+      { t: 12, label: 'CTA → Onboarding', fn: () => {
+          showCaption('Empezar', 'Armemos tu plan en 2 minutos.');
+          scrollIframe(0);
+        } },
+
+      { t: 13.5, label: 'Click empezar', fn: () => {
+          const btn = $$iframe('button').find(b => b.innerText.trim().startsWith('Empezar mi intercambio'));
+          clickInIframe(btn);
+        } },
+
+      { t: 15, label: 'Onboarding · destino', fn: () => {
+          showCaption('Paso 1 de 6', '¿A dónde te vas? Madrid es el destino más elegido por argentinos.');
+        } },
+
+      { t: 16.2, fn: () => {
+          // Click Madrid card — first button inside the StepDestino grid (button with image)
+          const cards = $$iframe('button').filter(b => b.querySelector('img'));
+          const madrid = cards.find(b => b.innerText.includes('Madrid'));
+          clickInIframe(madrid);
+        } },
+
+      { t: 18, label: 'Onboarding · cuándo', fn: () => {
+          showCaption('Paso 2', 'Cuándo arranca el intercambio. Esto define los deadlines de cada trámite.');
+        } },
+
+      { t: 19, fn: () => {
+          // duration "Un semestre" already default; click "Sep"
+          const sep = $$iframe('button').find(b => b.innerText.trim() === 'Sep');
+          clickInIframe(sep);
+        } },
+
+      { t: 20.2, fn: () => {
+          const cont = findBtn('Continuar');
+          clickInIframe(cont);
+        } },
+
+      { t: 21.5, label: 'Onboarding · universidad', fn: () => {
+          showCaption('Paso 3', 'Universidad de origen. Si es partner, hay descuento.');
+          const uni = $$iframe('button').find(b => b.innerText.trim() === 'Universidad de San Andrés');
+          if (uni) {
+            setTimeout(() => clickInIframe(uni), 600);
+          }
+        } },
+
+      { t: 23.5, fn: () => {
+          const cont = findBtn('Continuar');
+          clickInIframe(cont);
+        } },
+
+      { t: 24.5, label: 'Onboarding · resuelto', fn: () => {
+          showCaption('Paso 4', 'Marcá lo que ya tenés. No perdemos tiempo en eso.');
+          const pasaporte = $$iframe('button').find(b => b.innerText.includes('Pasaporte vigente') && b.innerText.includes('Tocá'));
+          if (pasaporte) setTimeout(() => clickInIframe(pasaporte), 400);
+        } },
+
+      { t: 26.2, fn: () => {
+          const cont = findBtn('Continuar');
+          clickInIframe(cont);
+        } },
+
+      { t: 27, label: 'Onboarding · prioridades', fn: () => {
+          showCaption('Paso 5', 'Ordená por importancia. Lo crítico va primero.');
+        } },
+
+      { t: 28.5, fn: () => {
+          const cont = findBtn('Ver mi plan');
+          clickInIframe(cont);
+        } },
+
+      { t: 29.5, label: 'Resultado', fn: () => {
+          showCaption('Tu plan', 'Listo. 8 trámites identificados, ordenados por urgencia para Madrid.');
+          hideCursor();
+        } },
+
+      { t: 33, label: 'Dashboard', fn: () => {
+          showCaption('Web del producto', 'Tu dashboard: 87 días para Madrid, próximas acciones, soporte humano.');
+          const entrar = findBtn('Entrar a mi plan');
+          clickInIframe(entrar);
+        } },
+
+      { t: 36, fn: () => {
+          showCaption('Dashboard', 'Cada trámite con su estado: <em>listo</em>, <em>en curso</em>, <em>para elegir</em> o <em>bloqueado</em>.');
+          scrollIframe(400);
+        } },
+
+      { t: 39, fn: () => {
+          showCaption('Próxima acción', '"Elegí tu seguro médico" — 3 opciones ya filtradas para tu perfil.');
+          scrollIframe(800);
+        } },
+
+      { t: 42, fn: () => {
+          showCaption('Listo', 'Nomade: tu intercambio, <em>resuelto</em>.');
+          scrollIframe(0);
+        } },
+    ];
+
+    const totalDuration = 45;
+    document.getElementById('timestamp').textContent = `0:00 / 0:${String(totalDuration).padStart(2,'0')}`;
+
+    // ----- Chapter markers -----
+    function renderChapterMarkers() {
+      const container = document.getElementById('chapter-markers');
+      container.innerHTML = '';
+      timeline.filter(e => e.chapter || e.label).forEach(e => {
+        const m = document.createElement('div');
+        m.className = 'chapter-marker';
+        m.style.left = `${(e.t / totalDuration) * 100}%`;
+        container.appendChild(m);
+      });
+    }
+    renderChapterMarkers();
+
+    // ----- Loop -----
+    // Use setInterval at 50ms instead of rAF so the timeline keeps advancing
+    // even when the tab is briefly hidden during testing or background load.
+    let lastWall = 0;
+    function tick() {
+      if (!playing || !iframeReady) { lastWall = performance.now(); return; }
+      const now = performance.now();
+      const dt = lastWall ? Math.min(0.15, (now - lastWall) / 1000) : 0;
+      lastWall = now;
+      currentTime += dt;
+
+      // dispatch events
+      timeline.forEach((ev, i) => {
+        if (!dispatched.has(i) && currentTime >= ev.t) {
+          dispatched.add(i);
+          try { ev.fn(); } catch (e) { console.error('event', i, e); }
+        }
+      });
+
+      // UI
+      const pct = Math.min(100, (currentTime / totalDuration) * 100);
+      progressFill.style.width = pct + '%';
+      const mm = Math.floor(currentTime / 60);
+      const ss = Math.floor(currentTime % 60);
+      const tm = Math.floor(totalDuration / 60);
+      const ts2 = Math.floor(totalDuration % 60);
+      timestamp.textContent = `${mm}:${String(ss).padStart(2,'0')} / ${tm}:${String(ts2).padStart(2,'0')}`;
+
+      if (currentTime >= totalDuration) {
+        playing = false;
+        playBtn.textContent = '⟲ Ver de nuevo';
+        playBtn.onclick = restart;
+        hideCursor();
+      }
+    }
+
+    iframe.addEventListener('load', () => {
+      loadCount++;
+      iframeReady = true;
+      // Dispatch any events that have already passed (used after seekTo or restart)
+      timeline.forEach((ev, i) => {
+        if (!dispatched.has(i) && currentTime >= ev.t) {
+          dispatched.add(i);
+          try { ev.fn(); } catch (e) {}
+        }
+      });
+      // Start the tick loop only ONCE — subsequent iframe loads must not spawn extra loops
+      if (!tickStarted) {
+        tickStarted = true;
+        lastWall = 0;
+        setInterval(tick, 50);
+      }
+    });
+
+    // ----- Controls -----
+    function togglePlay() {
+      playing = !playing;
+      if (playing && currentTime >= totalDuration) {
+        restart(); return;
+      }
+      playBtn.textContent = playing ? '⏸ Pausar' : '▶ Reproducir';
+    }
+    function restart() {
+      currentTime = 0;
+      dispatched.clear();
+      iframeReady = false;
+      lastRaf = 0;
+      iframe.src = window.__resources.proto;
+      hideCaption();
+      hideCursor();
+      intro.classList.remove('hidden');
+      playing = true;
+      playBtn.textContent = '⏸ Pausar';
+      playBtn.onclick = togglePlay;
+    }
+    function seekTo(e) {
+      const r = e.currentTarget.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+      const targetTime = pct * totalDuration;
+      currentTime = 0;
+      dispatched.clear();
+      iframeReady = false;
+      lastRaf = 0;
+      // Reload iframe; main load handler will dispatch up to currentTime,
+      // then we bump currentTime to target after dispatch.
+      iframe.src = window.__resources.proto;
+      const onLoad = () => {
+        // wait one more tick to ensure dispatch already ran
+        setTimeout(() => {
+          currentTime = targetTime;
+          timeline.forEach((ev, i) => {
+            if (!dispatched.has(i) && currentTime >= ev.t) {
+              dispatched.add(i);
+              try { ev.fn(); } catch (e2) {}
+            }
+          });
+        }, 100);
+        iframe.removeEventListener('load', onLoad);
+      };
+      iframe.addEventListener('load', onLoad);
+    }
+  </script>
+</body>
+</html>
