@@ -12,10 +12,30 @@ const NOMADE_DEFAULTS = /*EDITMODE-BEGIN*/{
   "stickerStyle": "stamp"
 }/*EDITMODE-END*/;
 
+const DEMO_PROFILE = { destination: "madrid", duration: "semester", monthIdx: 6, uni: "Universidad de San Andrés", resolved: ["pasaporte"], priorities: {} };
+
+function getInitialView() {
+  const h = (window.location.hash || "").replace("#", "").toLowerCase();
+  if (h === "dashboard" || h === "onboarding" || h === "landing") return h;
+  return "landing";
+}
+
 function App() {
   const [t, setTweak] = useTweaks(NOMADE_DEFAULTS);
-  const [view, setView] = useStateA("landing"); // landing | onboarding | dashboard
-  const [profile, setProfile] = useStateA(null);
+  const initial = getInitialView();
+  const [view, setView] = useStateA(initial);
+  const [profile, setProfile] = useStateA(initial === "dashboard" ? DEMO_PROFILE : null);
+
+  useEffectA(() => {
+    const onHash = () => {
+      const h = (window.location.hash || "").replace("#", "").toLowerCase();
+      if (h === "dashboard") { setProfile(DEMO_PROFILE); setView("dashboard"); }
+      else if (h === "onboarding") setView("onboarding");
+      else if (h === "landing" || h === "") setView("landing");
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
 
   // Apply palette to root
   useEffectA(() => {
